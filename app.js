@@ -312,23 +312,266 @@
    }
    
    /** 전체 데이터 로딩 */
+   // ============================================================
+   //  BIGMAC PRICES — 자동 업데이트 (1월/7월)
+   //  1순위: 이코노미스트 GitHub CSV (최신 데이터 자동 반영)
+   //  2순위: 로컬 data/bigmac_prices.json (안전망)
+   // ============================================================
+   const ECONOMIST_CSV_URL =
+     'https://raw.githubusercontent.com/TheEconomist/big-mac-data/master/source-data/big-mac-source-data-v2.csv';
+   
+   const SUPPORTED_COUNTRY_CODES = new Set([
+     'US','AR','AU','BR','GB','CA','CL','CN','CO','CR','CZ','DK','EG','EU',
+     'HK','HU','IN','ID','IL','JP','MY','MX','NZ','NO','PK','PE','PH','PL',
+     'RO','RU','SA','SG','ZA','KR','LK','SE','CH','TW','TH','TR','UA','AE',
+     'UY','VE','VN','AZ','BH','GT','HN','JO','KW','LB','MD','NI','OM','QA'
+   ]);
+   
+   const COUNTRY_META = {
+     US:{currency:'USD',symbol:'$',flag:'🇺🇸',name:'United States'},
+     AR:{currency:'ARS',symbol:'$',flag:'🇦🇷',name:'Argentina'},
+     AU:{currency:'AUD',symbol:'A$',flag:'🇦🇺',name:'Australia'},
+     BR:{currency:'BRL',symbol:'R$',flag:'🇧🇷',name:'Brazil'},
+     GB:{currency:'GBP',symbol:'£',flag:'🇬🇧',name:'Britain'},
+     CA:{currency:'CAD',symbol:'CA$',flag:'🇨🇦',name:'Canada'},
+     CL:{currency:'CLP',symbol:'CLP$',flag:'🇨🇱',name:'Chile'},
+     CN:{currency:'CNY',symbol:'¥',flag:'🇨🇳',name:'China'},
+     CO:{currency:'COP',symbol:'COP$',flag:'🇨🇴',name:'Colombia'},
+     CR:{currency:'CRC',symbol:'₡',flag:'🇨🇷',name:'Costa Rica'},
+     CZ:{currency:'CZK',symbol:'Kč',flag:'🇨🇿',name:'Czech Republic'},
+     DK:{currency:'DKK',symbol:'kr',flag:'🇩🇰',name:'Denmark'},
+     EG:{currency:'EGP',symbol:'E£',flag:'🇪🇬',name:'Egypt'},
+     EU:{currency:'EUR',symbol:'€',flag:'🇪🇺',name:'Euro area'},
+     HK:{currency:'HKD',symbol:'HK$',flag:'🇭🇰',name:'Hong Kong'},
+     HU:{currency:'HUF',symbol:'Ft',flag:'🇭🇺',name:'Hungary'},
+     IN:{currency:'INR',symbol:'₹',flag:'🇮🇳',name:'India'},
+     ID:{currency:'IDR',symbol:'Rp',flag:'🇮🇩',name:'Indonesia'},
+     IL:{currency:'ILS',symbol:'₪',flag:'🇮🇱',name:'Israel'},
+     JP:{currency:'JPY',symbol:'¥',flag:'🇯🇵',name:'Japan'},
+     MY:{currency:'MYR',symbol:'RM',flag:'🇲🇾',name:'Malaysia'},
+     MX:{currency:'MXN',symbol:'MX$',flag:'🇲🇽',name:'Mexico'},
+     NZ:{currency:'NZD',symbol:'NZ$',flag:'🇳🇿',name:'New Zealand'},
+     NO:{currency:'NOK',symbol:'kr',flag:'🇳🇴',name:'Norway'},
+     PK:{currency:'PKR',symbol:'Rs',flag:'🇵🇰',name:'Pakistan'},
+     PE:{currency:'PEN',symbol:'S/',flag:'🇵🇪',name:'Peru'},
+     PH:{currency:'PHP',symbol:'₱',flag:'🇵🇭',name:'Philippines'},
+     PL:{currency:'PLN',symbol:'zł',flag:'🇵🇱',name:'Poland'},
+     RO:{currency:'RON',symbol:'lei',flag:'🇷🇴',name:'Romania'},
+     RU:{currency:'RUB',symbol:'₽',flag:'🇷🇺',name:'Russia'},
+     SA:{currency:'SAR',symbol:'SR',flag:'🇸🇦',name:'Saudi Arabia'},
+     SG:{currency:'SGD',symbol:'S$',flag:'🇸🇬',name:'Singapore'},
+     ZA:{currency:'ZAR',symbol:'R',flag:'🇿🇦',name:'South Africa'},
+     KR:{currency:'KRW',symbol:'₩',flag:'🇰🇷',name:'South Korea'},
+     LK:{currency:'LKR',symbol:'Rs',flag:'🇱🇰',name:'Sri Lanka'},
+     SE:{currency:'SEK',symbol:'kr',flag:'🇸🇪',name:'Sweden'},
+     CH:{currency:'CHF',symbol:'CHF',flag:'🇨🇭',name:'Switzerland'},
+     TW:{currency:'TWD',symbol:'NT$',flag:'🇹🇼',name:'Taiwan'},
+     TH:{currency:'THB',symbol:'฿',flag:'🇹🇭',name:'Thailand'},
+     TR:{currency:'TRY',symbol:'₺',flag:'🇹🇷',name:'Turkey'},
+     UA:{currency:'UAH',symbol:'₴',flag:'🇺🇦',name:'Ukraine'},
+     AE:{currency:'AED',symbol:'AED',flag:'🇦🇪',name:'United Arab Emirates'},
+     UY:{currency:'UYU',symbol:'$U',flag:'🇺🇾',name:'Uruguay'},
+     VE:{currency:'VES',symbol:'Bs.S',flag:'🇻🇪',name:'Venezuela'},
+     VN:{currency:'VND',symbol:'₫',flag:'🇻🇳',name:'Vietnam'},
+     AZ:{currency:'AZN',symbol:'₼',flag:'🇦🇿',name:'Azerbaijan'},
+     BH:{currency:'BHD',symbol:'BD',flag:'🇧🇭',name:'Bahrain'},
+     GT:{currency:'GTQ',symbol:'Q',flag:'🇬🇹',name:'Guatemala'},
+     HN:{currency:'HNL',symbol:'L',flag:'🇭🇳',name:'Honduras'},
+     JO:{currency:'JOD',symbol:'JD',flag:'🇯🇴',name:'Jordan'},
+     KW:{currency:'KWD',symbol:'KD',flag:'🇰🇼',name:'Kuwait'},
+     LB:{currency:'LBP',symbol:'LL',flag:'🇱🇧',name:'Lebanon'},
+     MD:{currency:'MDL',symbol:'L',flag:'🇲🇩',name:'Moldova'},
+     NI:{currency:'NIO',symbol:'C$',flag:'🇳🇮',name:'Nicaragua'},
+     OM:{currency:'OMR',symbol:'OMR',flag:'🇴🇲',name:'Oman'},
+     QA:{currency:'QAR',symbol:'QR',flag:'🇶🇦',name:'Qatar'},
+   };
+   
+   const ISO3_TO_CODE = {
+     USA:'US',ARG:'AR',AUS:'AU',BRA:'BR',GBR:'GB',CAN:'CA',CHL:'CL',CHN:'CN',
+     COL:'CO',CRI:'CR',CZE:'CZ',DNK:'DK',EGY:'EG',EUZ:'EU',HKG:'HK',HUN:'HU',
+     IND:'IN',IDN:'ID',ISR:'IL',JPN:'JP',MYS:'MY',MEX:'MX',NZL:'NZ',NOR:'NO',
+     PAK:'PK',PER:'PE',PHL:'PH',POL:'PL',ROU:'RO',RUS:'RU',SAU:'SA',SGP:'SG',
+     ZAF:'ZA',KOR:'KR',LKA:'LK',SWE:'SE',CHE:'CH',TWN:'TW',THA:'TH',TUR:'TR',
+     UKR:'UA',ARE:'AE',URY:'UY',VEN:'VE',VNM:'VN',AZE:'AZ',BHR:'BH',GTM:'GT',
+     HND:'HN',JOR:'JO',KWT:'KW',LBN:'LB',MDA:'MD',NIC:'NI',OMN:'OM',QAT:'QA',
+   };
+   
+   function parseEconomistCSV(csvText) {
+     const lines = csvText.trim().split('\n');
+     const headers = lines[0].split(',').map(h => h.trim().replace(/"/g,''));
+   
+     const dateIdx   = headers.indexOf('date');
+     const isoIdx    = headers.indexOf('iso_a3');
+     const localIdx  = headers.indexOf('local_price');
+     const dollarIdx = headers.indexOf('dollar_price');
+   
+     if (dateIdx < 0 || isoIdx < 0 || localIdx < 0) {
+       throw new Error('CSV format changed: missing columns');
+     }
+   
+     const byDate = {};
+     for (let i = 1; i < lines.length; i++) {
+       const cols = lines[i].split(',').map(c => c.trim().replace(/"/g,''));
+       if (cols.length < 4) continue;
+       const date  = cols[dateIdx];
+       const iso3  = cols[isoIdx];
+       const local = parseFloat(cols[localIdx]);
+       const dollarP = parseFloat(cols[dollarIdx]);
+       if (!date || !iso3 || isNaN(local)) continue;
+       if (!byDate[date]) byDate[date] = [];
+       byDate[date].push({ iso3, local, dollarP });
+     }
+   
+     const latestDate = Object.keys(byDate).sort().reverse()[0];
+     const latestRows = byDate[latestDate] || [];
+     console.log('📅 Economist CSV latest:', latestDate, '—', latestRows.length, 'rows');
+   
+     const result = [];
+     latestRows.forEach(function(row) {
+       const code = ISO3_TO_CODE[row.iso3];
+       if (!code || !SUPPORTED_COUNTRY_CODES.has(code)) return;
+       const meta = COUNTRY_META[code];
+       if (!meta) return;
+       result.push({
+         country:            meta.name,
+         country_code:       code,
+         flag:               meta.flag,
+         currency:           meta.currency,
+         currency_symbol:    meta.symbol,
+         bigmac_price_local: row.local,
+         bigmac_price_usd:   isNaN(row.dollarP) ? null : row.dollarP,
+         data_date:          latestDate.slice(0,7),
+         source:             ECONOMIST_CSV_URL,
+         verified:           true,
+         auto_updated:       true,
+       });
+     });
+   
+     const fetched = new Set(result.map(r => r.country_code));
+     SUPPORTED_COUNTRY_CODES.forEach(function(code) {
+       if (!fetched.has(code)) console.warn('⚠️ Not in Economist CSV:', code);
+     });
+   
+     return result;
+   }
+   
+   async function loadBigmacPrices() {
+     try {
+       const res = await fetch(ECONOMIST_CSV_URL);
+       if (!res.ok) throw new Error('GitHub CSV HTTP ' + res.status);
+       const text = await res.text();
+       if (!text || text.length < 100) throw new Error('CSV empty');
+       const parsed = parseEconomistCSV(text);
+       if (parsed.length < 20) throw new Error('Too few countries: ' + parsed.length);
+       console.log('✅ Bigmac prices: live CSV —', parsed.length, 'countries,', parsed[0]?.data_date);
+       return parsed;
+     } catch (e) {
+       console.warn('⚠️ Bigmac CSV failed, using local fallback:', e.message);
+       const res = await fetch('./data/bigmac_prices.json');
+       if (!res.ok) throw new Error('Local bigmac_prices.json not found');
+       const data = await res.json();
+       console.log('✅ Bigmac prices: local fallback —', data.length, 'countries');
+       return data;
+     }
+   }
+   
+   // ============================================================
+   //  MINIMUM WAGE — 분기별 업데이트
+   //  로컬 파일 기반 + 빅맥 대비 구매력 실시간 재계산
+   // ============================================================
+   
+   async function loadMinimumWage(pricesData) {
+     let wageData = null;
+     try {
+       const res = await fetch('./data/minimum_wage.json');
+       if (!res.ok) throw new Error('minimum_wage.json HTTP ' + res.status);
+       wageData = await res.json();
+       console.log('✅ Minimum wage: local file loaded');
+     } catch (e) {
+       console.warn('⚠️ minimum_wage.json failed:', e.message);
+       return null;
+     }
+   
+     const priceMap = {};
+     pricesData.forEach(function(p) { priceMap[p.country_code] = p.bigmac_price_usd; });
+   
+     const wages = wageData.wages || wageData;
+     Object.keys(wages).forEach(function(code) {
+       const w = wages[code];
+       const hourly  = w.hourly_usd || null;
+       const bmPrice = priceMap[code];
+       w.bigmacs_per_hour = (hourly && bmPrice && bmPrice > 0)
+         ? parseFloat((hourly / bmPrice).toFixed(2))
+         : null;
+     });
+   
+     return wages;
+   }
+   
+   function mergeWageData(countriesList, wageMap) {
+     if (!wageMap) return;
+     countriesList.forEach(function(c) {
+       const w = wageMap[c.country_code];
+       if (w) {
+         c.minimum_wage_usd = w.hourly_usd || null;
+         c.minimum_wage_bigmacs_per_hour = w.bigmacs_per_hour || null;
+       }
+     });
+   }
+   
    async function loadAllData() {
-     // 환율 먼저 (실시간 API 우선)
+     // 1. 환율 (실시간 API 우선)
      const ratesData = await loadExchangeRates();
    
-     // 빅맥 가격 + 계산 데이터 병렬 로드 (로컬 파일)
+     // 2. 빅맥 가격 (이코노미스트 CSV 우선 → 로컬 폴백)
+     //    index_calculated.json은 구조 참고용 (실제 계산은 recalcValuations에서)
      const [pricesData, calculatedData] = await Promise.all([
-       fetch('./data/bigmac_prices.json').then(r => {
-         if (!r.ok) throw new Error('bigmac_prices.json not found');
-         return r.json();
-       }),
+       loadBigmacPrices(),
        fetch('./data/index_calculated.json').then(r => {
          if (!r.ok) throw new Error('index_calculated.json not found');
          return r.json();
        })
      ]);
    
-     return { rates: ratesData, prices: pricesData, calculated: calculatedData };
+     // 3. 최저임금 (로컬, 빅맥 가격 기반 재계산)
+     const wageMap = await loadMinimumWage(pricesData);
+   
+     // 4. bigmac_prices + index_calculated 병합
+     //    CSV 최신 가격을 calculated에 반영
+     const mergedMap = {};
+     calculatedData.forEach(function(c) { mergedMap[c.country_code] = Object.assign({}, c); });
+   
+     pricesData.forEach(function(p) {
+       if (!mergedMap[p.country_code]) {
+         // CSV에 있지만 calculated에 없는 신규 나라
+         mergedMap[p.country_code] = {
+           country_code: p.country_code,
+           country:      p.country,
+           flag:         p.flag,
+           currency:     p.currency,
+           currency_symbol: p.currency_symbol,
+           bigmac_price_local: p.bigmac_price_local,
+           bigmac_price_usd:   p.bigmac_price_usd,
+           bigmac_ppp:   null,
+           over_under_valued_pct: null,
+           price_rank:   null,
+           minimum_wage_bigmacs_per_hour: null,
+           anomaly_flag: false,
+         };
+       } else {
+         // 최신 CSV 가격으로 업데이트
+         mergedMap[p.country_code].bigmac_price_local = p.bigmac_price_local;
+         mergedMap[p.country_code].bigmac_price_usd   = p.bigmac_price_usd;
+         mergedMap[p.country_code].data_date          = p.data_date;
+       }
+     });
+   
+     const mergedCalculated = Object.values(mergedMap);
+   
+     // 5. 최저임금 병합
+     if (wageMap) mergeWageData(mergedCalculated, wageMap);
+   
+     return { rates: ratesData, prices: pricesData, calculated: mergedCalculated };
    }
    
    // ============================================================
