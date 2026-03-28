@@ -559,10 +559,16 @@
            anomaly_flag: false,
          };
        } else {
-         // 최신 CSV 가격으로 업데이트
-         mergedMap[p.country_code].bigmac_price_local = p.bigmac_price_local;
-         mergedMap[p.country_code].bigmac_price_usd   = p.bigmac_price_usd;
-         mergedMap[p.country_code].data_date          = p.data_date;
+         // 최신 CSV 가격으로 업데이트 (null이 아닌 경우만)
+         if (p.bigmac_price_local != null) {
+           mergedMap[p.country_code].bigmac_price_local = p.bigmac_price_local;
+         }
+         if (p.bigmac_price_usd != null && !isNaN(p.bigmac_price_usd)) {
+           mergedMap[p.country_code].bigmac_price_usd = p.bigmac_price_usd;
+         }
+         if (p.data_date) {
+           mergedMap[p.country_code].data_date = p.data_date;
+         }
        }
      });
    
@@ -590,6 +596,7 @@
    }
    
    function displayPrice(usdPrice) {
+     if (usdPrice == null || isNaN(usdPrice)) return '—';
      if (currentMode === 'KO') {
        const krw = usdPrice * (rates.KRW || 1400);
        return '₩' + Math.round(krw).toLocaleString('ko-KR');
@@ -646,6 +653,7 @@
      countriesList.forEach(function(c) {
        const rate = currentRates[c.currency];
        if (!rate) return; // 환율 없으면 건너뜀
+       if (c.bigmac_price_local == null || isNaN(c.bigmac_price_local)) return;
    
        // PPP 환율: 현지 빅맥 가격을 미국 가격으로 나눈 값
        // (1 USD에 해당하는 현지 통화량)
@@ -679,7 +687,7 @@
        prices     = data.prices;
        calculated = data.calculated;
    
-       countries = calculated.filter(c => !c.anomaly_flag);
+       countries = calculated.filter(c => !c.anomaly_flag && c.bigmac_price_usd != null && !isNaN(c.bigmac_price_usd));
        anomalies = calculated.filter(c => c.anomaly_flag);
    
        // ★ 핵심: 실시간 환율로 고평가율 재계산 (anomalies 포함)
