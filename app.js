@@ -375,6 +375,54 @@
    // ============================================================
    //  INIT
    // ============================================================
+   // ============================================================
+   //  REAL-TIME VALUATION RECALCULATION
+   //  빅맥 지수의 핵심:
+   //    - bigmac_price_usd  → 2025-01 당시 환율로 고정 (변경 안 함)
+   //    - over_under_valued_pct → 실시간 환율로 매일 재계산
+   //    - bigmac_ppp        → 현지가격 / 미국가격 (환율 무관, 고정)
+   //
+   //  공식:
+   //    PPP환율  = 현지가격 / 미국가격(5.69)
+   //    고평가율 = (PPP환율 - 실제환율) / 실제환율 × 100
+   //
+   //  예시 (한국, 실시간 환율 1488 기준):
+   //    PPP  = 5800 / 5.69 = 1019.33
+   //    고평가율 = (1019.33 - 1488) / 1488 × 100 = -31.5%
+   // ============================================================
+   
+   const US_BIGMAC_PRICE = 5.69; // 2025-01 미국 빅맥 가격 (고정)
+   
+   /**
+    * 실시간 환율로 모든 나라의 고평가율을 재계산
+    * loadAllData() 완료 후 rates가 확정된 시점에 호출
+    */
+   function recalcValuations(countriesList, currentRates) {
+     const usRate = currentRates['USD'] || 1; // 항상 1
+   
+     countriesList.forEach(function(c) {
+       const rate = currentRates[c.currency];
+       if (!rate) return; // 환율 없으면 건너뜀
+   
+       // PPP 환율: 현지 빅맥 가격을 미국 가격으로 나눈 값
+       // (1 USD에 해당하는 현지 통화량)
+       const ppp = c.bigmac_price_local / US_BIGMAC_PRICE;
+   
+       // 고평가율 재계산 (실시간 환율 반영)
+       // 양수 = 고평가 (빅맥이 미국보다 비쌈)
+       // 음수 = 저평가 (빅맥이 미국보다 쌈)
+       const valuation = ((ppp - rate) / rate) * 100;
+   
+       // bigmac_ppp는 환율 무관 고정값이지만 일관성을 위해 재확인
+       c.bigmac_ppp = parseFloat(ppp.toFixed(4));
+       c.over_under_valued_pct = parseFloat(valuation.toFixed(1));
+     });
+   
+     console.log('🔄 Valuations recalculated with live rates');
+     console.log('   Sample KR:', countriesList.find(c => c.country_code === 'KR')?.over_under_valued_pct + '%');
+     console.log('   Sample CH:', countriesList.find(c => c.country_code === 'CH')?.over_under_valued_pct + '%');
+   }
+   
    async function initApp() {
      const saved = localStorage.getItem('bigmac_mode');
      if (saved === 'KO') currentMode = 'KO';
@@ -390,6 +438,11 @@
    
        countries = calculated.filter(c => !c.anomaly_flag);
        anomalies = calculated.filter(c => c.anomaly_flag);
+   
+       // ★ 핵심: 실시간 환율로 고평가율 재계산 (anomalies 포함)
+       recalcValuations(countries, rates);
+       recalcValuations(anomalies, rates);
+   
        countries.sort((a, b) => a.bigmac_price_usd - b.bigmac_price_usd);
    
        console.log('✅ Data loaded successfully');
