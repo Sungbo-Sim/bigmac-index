@@ -48,10 +48,9 @@ const CONTINENT_COLORS = {
 // Pagination
 let exchangePage = 0;
 const EXCHANGE_PER_PAGE = 5;
-let exchangeBaseAmount = 1; // EN: USD amount, KO: KRW amount (default changes per mode)
-let ratesTimestamp = '';    // 환율 가져온 시점
+let exchangeBaseAmount = 1;
+let ratesTimestamp = '';
 
-// 여행/유학 인기순 국가 정렬 (EN: KR 첫번째, KO: US 첫번째)
 const EXCHANGE_ORDER_EN = [
   'KR','JP','EU','GB','CN','AU','CA','TH','VN','SG',
   'CH','NZ','TW','PH','MY','HK','IN','ID','MX',
@@ -70,7 +69,7 @@ const EXCHANGE_ORDER_KO = [
 ];
 
 // ============================================================
-//  i18n — design_v2.md 명세 그대로
+//  i18n
 // ============================================================
 const i18n = {
   EN: {
@@ -199,7 +198,6 @@ const i18n = {
   }
 };
 
-// Korean country names
 const countryNameKO = {
   US:'미국', AR:'아르헨티나', AU:'호주', BR:'브라질', GB:'영국',
   CA:'캐나다', CL:'칠레', CN:'중국', CO:'콜롬비아', CR:'코스타리카',
@@ -217,51 +215,87 @@ const countryNameKO = {
 };
 
 // ============================================================
-//  DATA LOADING — frontend-builder.md 명세 그대로
+//  DATA LOADING
 // ============================================================
 
-/** 환율 로딩: 로컬 JSON → API → 폴백 API 순서 */
+/**
+ * 환율 로딩 전략 (3단계 폴백)
+ *
+ * 1순위: open.er-api.com 실시간 API (매일 갱신, 무료, 키 불필요)
+ * 2순위: frankfurter.app 폴백 API
+ * 3순위: 로컬 data/exchange_rates.json (항상 유지되는 안전망)
+ *
+ * ※ 로컬 파일을 마지막으로 둔 이유:
+ *    - API가 성공하면 항상 최신 환율 사용
+ *    - 네트워크 완전 차단 시에만 로컬 파일 사용
+ *    - 현재 올라간 나라들이 절대 깨지지 않도록 보장
+ */
 async function loadExchangeRates() {
   const today = new Date().toISOString().split('T')[0];
 
+  // 1순위: open.er-api.com 실시간 API
   try {
-    // 1순위: 로컬 JSON 확인
-    const res = await fetch('../data/exchange_rates.json');
+    const res = await fetch('https://open.er-api.com/v6/latest/USD');
+    if (!res.ok) throw new Error('API HTTP ' + res.status);
     const data = await res.json();
-
-    // 오늘 날짜면 그대로 사용
-    if (data.last_updated === today) {
-      console.log('Exchange rates: using local file', data.last_updated);
-      ratesTimestamp = data.last_updated + ' (local)';
-      return data.rates;
-    }
-    throw new Error('Stale data: ' + data.last_updated);
-
+    if (!data.rates || !data.rates.KRW) throw new Error('Invalid API response');
+    console.log('Exchange rates: live API success, KRW =', data.rates.KRW);
+    const apiDate = data.time_last_update_utc || data.date || today;
+    ratesTimestamp = formatApiTimestamp(apiDate) + ' (live)';
+    return data.rates;
   } catch (e) {
-    console.log('Exchange rates: fetching from API...', e.message);
+    console.warn('Exchange rates: primary API failed:', e.message);
+  }
 
-    try {
-      // 2순위: open.er-api.com (무료, 가입 불필요)
-      const res = await fetch('https://open.er-api.com/v6/latest/USD');
-      const data = await res.json();
-      console.log('Exchange rates: API success, KRW =', data.rates.KRW);
-      // API returns time_last_update_utc like "Tue, 25 Mar 2025 00:00:01 +0000"
-      const apiDate = data.time_last_update_utc || data.date || today;
-      ratesTimestamp = formatApiTimestamp(apiDate);
-      return data.rates;
+  // 2순위: frankfurter.app 폴백 API
+  try {
+    const res = await fetch('https://api.frankfurter.app/latest?from=USD');
+    if (!res.ok) throw new Error('Frankfurter HTTP ' + res.status);
+    const data = await res.json();
+    if (!data.rates) throw new Error('Invalid frankfurter response');
+    // frankfurter는 USD 자체를 포함하지 않으므로 추가
+    data.rates.USD = 1;
+    console.log('Exchange rates: frankfurter fallback success');
+    ratesTimestamp = (data.date || today) + ' (frankfurter)';
+    return data.rates;
+  } catch (e) {
+    console.warn('Exchange rates: fallback API failed:', e.message);
+  }
 
-    } catch {
-      // 3순위: frankfurter.app
-      const res = await fetch('https://api.frankfurter.app/latest?from=USD');
-      const data = await res.json();
-      console.log('Exchange rates: fallback API success');
-      ratesTimestamp = (data.date || today) + ' (frankfurter)';
-      return data.rates;
-    }
+  // 3순위: 로컬 파일 (네트워크 완전 불가 시 안전망)
+  try {
+    const res = await fetch('./data/exchange_rates.json');
+    if (!res.ok) throw new Error('Local file HTTP ' + res.status);
+    const data = await res.json();
+    if (!data.rates) throw new Error('Invalid local file');
+    console.warn('Exchange rates: using local fallback file, dated:', data.last_updated);
+    ratesTimestamp = (data.last_updated || 'cached') + ' (offline)';
+    return data.rates;
+  } catch (e) {
+    console.error('Exchange rates: all sources failed:', e.message);
+    // 최후 수단: 하드코딩된 기본값 (2026-03-24 기준)
+    ratesTimestamp = '2026-03-24 (hardcoded)';
+    return FALLBACK_RATES;
   }
 }
 
-/** API 타임스탬프를 읽기 쉬운 형식으로 변환 */
+/**
+ * 하드코딩 폴백 환율 (모든 네트워크 실패 시 사이트가 깨지지 않도록)
+ * 현재 올라간 나라들의 통화만 포함
+ */
+const FALLBACK_RATES = {
+  USD:1, KRW:1488, JPY:158.6, EUR:0.862, GBP:0.745, AUD:1.427,
+  CAD:1.372, SGD:1.275, CHF:0.787, NZD:1.708, TWD:31.86, CNY:6.897,
+  THB:32.33, MYR:3.939, HKD:7.833, INR:93.46, IDR:16925, MXN:17.79,
+  CZK:21.07, HUF:334.4, PLN:3.675, SEK:9.332, NOK:9.736, DKK:6.436,
+  TRY:44.35, AED:3.673, BRL:5.258, ARS:1452, ILS:3.115, RUB:82.03,
+  ZAR:16.83, EGP:52.31, SAR:3.75, PEN:3.455, CLP:923.8, COP:3671,
+  UYU:40.02, CRC:463.3, RON:4.393, UAH:43.69, PKR:278.7, LKR:311.4,
+  JOD:0.709, KWD:0.306, BHD:0.376, OMR:0.384, QAR:3.64, AZN:1.691,
+  GTQ:7.596, HNL:26.25, NIO:36.50, MDL:17.37, VND:26276, PHP:59.72,
+};
+
+/** API 타임스탬프 포맷 */
 function formatApiTimestamp(raw) {
   try {
     const d = new Date(raw);
@@ -279,13 +313,19 @@ function formatApiTimestamp(raw) {
 
 /** 전체 데이터 로딩 */
 async function loadAllData() {
-  // 1단계: 환율을 가장 먼저 로드 (당일 최신값 보장)
+  // 환율 먼저 (실시간 API 우선)
   const ratesData = await loadExchangeRates();
 
-  // 2단계: 나머지 데이터 병렬 로드
+  // 빅맥 가격 + 계산 데이터 병렬 로드 (로컬 파일)
   const [pricesData, calculatedData] = await Promise.all([
-    fetch('../data/bigmac_prices.json').then(r => r.json()),
-    fetch('../data/index_calculated.json').then(r => r.json())
+    fetch('./data/bigmac_prices.json').then(r => {
+      if (!r.ok) throw new Error('bigmac_prices.json not found');
+      return r.json();
+    }),
+    fetch('./data/index_calculated.json').then(r => {
+      if (!r.ok) throw new Error('index_calculated.json not found');
+      return r.json();
+    })
   ]);
 
   return { rates: ratesData, prices: pricesData, calculated: calculatedData };
@@ -295,12 +335,10 @@ async function loadAllData() {
 //  HELPERS
 // ============================================================
 
-/** i18n 텍스트 가져오기 */
 function t(key) {
   return (i18n[currentMode] && i18n[currentMode][key]) || key;
 }
 
-/** 나라명 (KO면 한글, EN이면 영문) */
 function countryName(c) {
   if (currentMode === 'KO' && countryNameKO[c.country_code]) {
     return countryNameKO[c.country_code];
@@ -308,7 +346,6 @@ function countryName(c) {
   return c.country;
 }
 
-/** 가격 표시: EN이면 USD, KO면 KRW 환산 */
 function displayPrice(usdPrice) {
   if (currentMode === 'KO') {
     const krw = usdPrice * (rates.KRW || 1400);
@@ -317,7 +354,6 @@ function displayPrice(usdPrice) {
   return '$' + usdPrice.toFixed(2);
 }
 
-/** 로컬 가격 포맷 */
 function formatLocal(val) {
   if (val == null) return '—';
   return val >= 1000
@@ -326,7 +362,7 @@ function formatLocal(val) {
 }
 
 // ============================================================
-//  APPLY i18n TO ALL data-i18n ELEMENTS
+//  APPLY i18n
 // ============================================================
 function applyI18n() {
   document.querySelectorAll('[data-i18n]').forEach(el => {
@@ -340,11 +376,9 @@ function applyI18n() {
 //  INIT
 // ============================================================
 async function initApp() {
-  // Restore saved mode
   const saved = localStorage.getItem('bigmac_mode');
   if (saved === 'KO') currentMode = 'KO';
 
-  // Update toggle button & apply i18n
   updateToggleBtn();
   applyI18n();
 
@@ -354,22 +388,16 @@ async function initApp() {
     prices     = data.prices;
     calculated = data.calculated;
 
-    // Separate anomaly vs normal, filter verified
     countries = calculated.filter(c => !c.anomaly_flag);
     anomalies = calculated.filter(c => c.anomaly_flag);
-
-    // Sort by price ascending (cheapest first = default)
     countries.sort((a, b) => a.bigmac_price_usd - b.bigmac_price_usd);
 
     console.log('✅ Data loaded successfully');
     console.log('   Countries:', countries.length, '(+', anomalies.length, 'anomalies)');
     console.log('   KRW rate:', rates.KRW);
-    console.log('   Sample:', countries[0].country, '$' + countries[0].bigmac_price_usd);
+    console.log('   Rates source:', ratesTimestamp);
 
-    // Apply i18n again after data load
     applyI18n();
-
-    // Render all sections & bind events
     initWageCalculator();
     renderAll();
     bindExchangeEvents();
@@ -385,7 +413,6 @@ async function initApp() {
 //  EXCHANGE RATE SECTION
 // ============================================================
 
-/** 인기순으로 정렬된 국가 목록 반환 (EN: KR first, KO: US first) */
 function getExchangeCountries() {
   const orderList = currentMode === 'EN' ? EXCHANGE_ORDER_EN : EXCHANGE_ORDER_KO;
   const ordered = [];
@@ -401,7 +428,6 @@ function getExchangeCountries() {
   return ordered;
 }
 
-/** 환율 기준 입력 UI 업데이트 */
 function updateExchangeBaseUI() {
   const symbolEl = document.getElementById('exchange-base-symbol');
   const inputEl  = document.getElementById('exchange-base-input');
@@ -449,12 +475,9 @@ function renderExchange() {
 
     let rateValue;
     if (currentMode === 'EN') {
-      // EN: $X USD = Y [foreign currency]
       const r = (rates[c.currency] || 0) * exchangeBaseAmount;
       rateValue = formatExchangeRate(r);
     } else {
-      // KO: ₩X KRW = Y [foreign currency]
-      // (exchangeBaseAmount / rates.KRW) × rates.[currency]
       const krwRate = rates.KRW || 1400;
       const r = (exchangeBaseAmount / krwRate) * (rates[c.currency] || 0);
       rateValue = formatExchangeRate(r);
@@ -484,21 +507,17 @@ function renderExchange() {
     container.appendChild(card);
   });
 
-  // Page indicator
   pageEl.textContent = (exchangePage + 1) + ' / ' + totalPages;
 
-  // Timestamp
   const tsEl = document.getElementById('exchange-timestamp');
   if (tsEl && ratesTimestamp) {
     tsEl.textContent = (currentMode === 'KO' ? '기준: ' : 'As of: ') + ratesTimestamp;
   }
 
-  // Arrow state
   prevBtn.disabled = exchangePage <= 0;
   nextBtn.disabled = exchangePage >= totalPages - 1;
 }
 
-/** 환율 숫자 포맷: 큰 수는 콤마, 작은 수는 소수점 */
 function formatExchangeRate(val) {
   if (val >= 10000) return Math.round(val).toLocaleString('en-US');
   if (val >= 100)   return val.toFixed(2);
@@ -523,7 +542,6 @@ function bindExchangeEvents() {
     }
   });
 
-  // Base amount input
   let debounce;
   document.getElementById('exchange-base-input').addEventListener('input', (e) => {
     const val = parseFloat(e.target.value);
@@ -540,12 +558,11 @@ function bindExchangeEvents() {
 //  EXCHANGE RATE HISTORY CHART
 // ============================================================
 let exchangeHistoryChart = null;
-let selectedExCurrency   = null;   // e.g. 'KRW'
-let selectedExCountry    = null;   // country object
+let selectedExCurrency   = null;
+let selectedExCountry    = null;
 let selectedPeriod       = '6M';
-let historyCache         = {};     // cache: "KRW_6M" → {dates, values}
+let historyCache         = {};
 
-/** 기간 탭에서 날짜 범위 계산 */
 function getPeriodDates(period) {
   const end = new Date();
   const start = new Date();
@@ -559,7 +576,6 @@ function getPeriodDates(period) {
   return { start, end };
 }
 
-/** 기간에 맞게 샘플 날짜 배열 생성 (약 20~30 포인트) */
 function generateSampleDates(start, end, period) {
   const dates = [];
   const ms = end.getTime() - start.getTime();
@@ -582,7 +598,6 @@ function generateSampleDates(start, end, period) {
   return dates;
 }
 
-/** 단일 날짜의 환율 가져오기 (fawazahmed0 API) */
 async function fetchRateForDate(dateStr, currency) {
   const cur = currency.toLowerCase();
   const url = 'https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@' + dateStr + '/v1/currencies/usd.json';
@@ -596,7 +611,6 @@ async function fetchRateForDate(dateStr, currency) {
   }
 }
 
-/** 히스토리 데이터 로드 (배치, 캐시) */
 async function loadHistoryData(currency, period) {
   const cacheKey = currency + '_' + period;
   if (historyCache[cacheKey]) return historyCache[cacheKey];
@@ -604,7 +618,6 @@ async function loadHistoryData(currency, period) {
   const { start, end } = getPeriodDates(period);
   const sampleDates = generateSampleDates(start, end, period);
 
-  // 병렬 요청 (5개씩 배치)
   const results = [];
   const batchSize = 5;
   for (let i = 0; i < sampleDates.length; i += batchSize) {
@@ -615,7 +628,6 @@ async function loadHistoryData(currency, period) {
     results.push(...batchResults);
   }
 
-  // null 필터링
   const dates = [];
   const values = [];
   sampleDates.forEach((d, i) => {
@@ -630,7 +642,6 @@ async function loadHistoryData(currency, period) {
   return data;
 }
 
-/** 차트 렌더링 */
 function renderExchangeHistoryChart(dates, values, currency, countryObj) {
   const canvas = document.getElementById('chart-exchange-history');
   const loadingEl = document.getElementById('exchange-chart-loading');
@@ -638,28 +649,13 @@ function renderExchangeHistoryChart(dates, values, currency, countryObj) {
 
   loadingEl.classList.add('hidden');
 
-  // KO 모드: USD→target를 KRW→target로 변환
-  // rates에서: 1 USD = X target, 1 USD = Y KRW
-  // 따라서 1 KRW = X/Y target → 이건 너무 작음
-  // 반대로: 1 target = Y/X KRW 형태가 더 유용
-  // 즉 KO: values[i]를 KRW/target = rates.KRW / values[i]
   let chartValues = values;
   let yLabel = currency + ' / USD';
 
   if (currentMode === 'KO') {
-    if (currency === 'USD') {
-      // KO + USD: load KRW data instead — show KRW/USD rate
-      // values[] contains USD rates (always 1.0), useless
-      // We already loaded KRW history via loadHistoryData('KRW', period)
-      // Redirect: fetch KRW history and show it
-      yLabel = 'KRW / 1 USD';
-      // values are from USD fetch (=1.0), replace with KRW history
-      // This is handled by onExchangeCardClick redirecting to KRW
-    } else if (currency === 'KRW') {
-      // Show KRW per USD directly — values are KRW rates per 1 USD
+    if (currency === 'KRW') {
       yLabel = 'KRW / 1 USD';
     } else {
-      // Other currencies: show how many KRW per 1 unit
       const krwNow = rates.KRW || 1400;
       chartValues = values.map(v => krwNow / v);
       yLabel = 'KRW / 1 ' + currency;
@@ -670,7 +666,6 @@ function renderExchangeHistoryChart(dates, values, currency, countryObj) {
   const titleEl = document.getElementById('exchange-chart-title');
   titleEl.textContent = countryObj.flag + ' ' + name + ' — ' + yLabel;
 
-  // Format x-axis labels
   const labels = dates.map(d => {
     const parts = d.split('-');
     return parts[1] + '/' + parts[2];
@@ -710,9 +705,7 @@ function renderExchangeHistoryChart(dates, values, currency, countryObj) {
           padding: 10,
           cornerRadius: 8,
           callbacks: {
-            title: function(ctx) {
-              return dates[ctx[0].dataIndex];
-            },
+            title: function(ctx) { return dates[ctx[0].dataIndex]; },
             label: function(ctx) {
               const v = ctx.raw;
               return '  ' + yLabel + ': ' + (v >= 100 ? v.toFixed(2) : v.toFixed(4));
@@ -737,19 +730,16 @@ function renderExchangeHistoryChart(dates, values, currency, countryObj) {
   });
 }
 
-/** 국가 카드 클릭 → 차트 로드 */
 async function onExchangeCardClick(countryObj) {
   selectedExCurrency = countryObj.currency;
   selectedExCountry  = countryObj;
 
-  // Highlight selected card
   document.querySelectorAll('.exchange-card').forEach(el => el.classList.remove('selected'));
   const cards = document.querySelectorAll('.exchange-card');
   cards.forEach(el => {
     if (el.dataset.code === countryObj.country_code) el.classList.add('selected');
   });
 
-  // Show loading
   const loadingEl = document.getElementById('exchange-chart-loading');
   loadingEl.textContent = t('chartLoading');
   loadingEl.classList.remove('hidden');
@@ -758,7 +748,6 @@ async function onExchangeCardClick(countryObj) {
   titleEl.textContent = countryObj.flag + ' ' + countryName(countryObj) + ' — ' + t('chartLoading');
 
   try {
-    // KO mode + USD click → load KRW history (원/달러 환율)
     var fetchCurrency = countryObj.currency;
     if (currentMode === 'KO' && fetchCurrency === 'USD') fetchCurrency = 'KRW';
 
@@ -775,7 +764,6 @@ async function onExchangeCardClick(countryObj) {
   }
 }
 
-/** 기간 탭 바인딩 */
 function bindExchangePeriodTabs() {
   document.querySelectorAll('.period-tab').forEach(tab => {
     tab.addEventListener('click', () => {
@@ -790,7 +778,7 @@ function bindExchangePeriodTabs() {
 }
 
 // ============================================================
-//  GLOBAL RANKING (Top 5 cards + full bar chart)
+//  GLOBAL RANKING
 // ============================================================
 function renderRanking() {
   renderRankingTabs();
@@ -848,7 +836,6 @@ function renderRankingCards() {
     listEl.appendChild(row);
   });
 
-  // Explanation box below TOP 5
   renderRankingExplainer(listEl);
 }
 
@@ -897,7 +884,6 @@ function renderRankingChart() {
   const canvas = document.getElementById('chart-ranking');
   if (!canvas) return;
 
-  // Sort: cheap tab = ascending (cheapest at top), expensive tab = descending
   const sorted = [...countries].sort((a, b) =>
     rankingTab === 'cheap'
       ? a.bigmac_price_usd - b.bigmac_price_usd
@@ -917,21 +903,18 @@ function renderRankingChart() {
     return interpolateGreenRed(ratio);
   });
 
-  // Dynamic height
   const barH = 22;
   const chartH = sorted.length * barH + 60;
   canvas.parentElement.style.height = chartH + 'px';
 
   if (chartRanking) chartRanking.destroy();
 
-  // US price = fair value baseline
   const usCountry = countries.find(c => c.country_code === 'US');
   const usPrice = usCountry ? usCountry.bigmac_price_usd : 5.69;
   const fairLine = currentMode === 'KO' ? Math.round(usPrice * (rates.KRW || 1400)) : usPrice;
   const overLine = currentMode === 'KO' ? Math.round(usPrice * 1.1 * (rates.KRW || 1400)) : usPrice * 1.1;
   const underLine = currentMode === 'KO' ? Math.round(usPrice * 0.9 * (rates.KRW || 1400)) : usPrice * 0.9;
 
-  // Plugin: draw vertical reference lines (fair value ± 10%)
   const valuationLinesPlugin = {
     id: 'valuationLines',
     afterDraw: function(chart) {
@@ -961,7 +944,6 @@ function renderRankingChart() {
         ctx.lineTo(x, area.bottom);
         ctx.stroke();
         ctx.setLineDash([]);
-        // Label — positioned to avoid overlap
         ctx.fillStyle = line.textColor;
         ctx.font = (line.bold ? '700 9px' : '600 8px') + ' -apple-system, sans-serif';
         ctx.textAlign = 'center';
@@ -1040,7 +1022,6 @@ function renderRankingChart() {
   });
 }
 
-/** Green → Yellow → Red color gradient */
 function interpolateGreenRed(ratio) {
   let r, g, b;
   if (ratio < 0.5) {
@@ -1057,7 +1038,6 @@ function interpolateGreenRed(ratio) {
   return 'rgba(' + r + ',' + g + ',' + b + ',0.82)';
 }
 
-/** Valuation badge HTML */
 function getValuationBadge(pct) {
   if (pct == null) return '<span class="badge badge-fair">' + t('fairValue') + '</span>';
   if (pct > 10)    return '<span class="badge badge-over">' + t('overvalued') + ' +' + pct.toFixed(0) + '%</span>';
@@ -1086,7 +1066,6 @@ function initWageCalculator() {
   const select = document.getElementById('wage-country');
   if (!select) return;
 
-  // Populate dropdown
   select.innerHTML = '';
   countries.forEach(c => {
     const opt = document.createElement('option');
@@ -1096,10 +1075,8 @@ function initWageCalculator() {
   });
   select.value = wageCountryCode;
 
-  // Set initial wage
   updateWageUSD();
 
-  // Events
   select.addEventListener('change', () => {
     onWageCountryChange(select.value);
   });
@@ -1130,14 +1107,12 @@ function onWageCountryChange(code) {
   document.getElementById('wage-country').value = code;
   document.getElementById('wage-symbol').textContent = c.currency_symbol;
 
-  // Default wage
   const def = DEFAULT_WAGES[code] || Math.round(c.bigmac_price_local * 2);
   wageLocal = def;
   const inp = document.getElementById('wage-input');
   inp.value = def;
   inp.step = def >= 1000 ? 100 : 1;
 
-  // Update quick btn active state
   document.querySelectorAll('#quick-btns .quick-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.code === code);
   });
@@ -1169,16 +1144,11 @@ function renderKPI() {
   const grid = document.getElementById('kpi-grid');
   if (!grid || countries.length === 0) return;
 
-  // Calculations
   const sorted = [...countries].sort((a, b) => a.bigmac_price_usd - b.bigmac_price_usd);
   const cheapest = sorted[0];
-  const priciest = sorted[sorted.length - 1];
 
-  // Widget 1: Minutes to earn 1 Big Mac (cheapest country)
   const minutesCheap = wageUSD > 0 ? Math.round((cheapest.bigmac_price_usd / wageUSD) * 60) : 0;
 
-  // Widget 2: Global purchasing power percentile
-  // Compare user's bigmacs/hr to all minimum_wage_bigmacs_per_hour
   const userBPH = wageUSD > 0 ? wageUSD / cheapest.bigmac_price_usd : 0;
   const allMinWageBPH = countries
     .filter(c => c.minimum_wage_bigmacs_per_hour != null)
@@ -1192,15 +1162,13 @@ function renderKPI() {
     if (percentile > 99) percentile = 99;
   }
 
-  // Widget 3: Best / Worst for user
-  const bestForUser = sorted[0]; // cheapest = best value
-  const worstForUser = sorted[sorted.length - 1]; // priciest = worst value
+  const bestForUser = sorted[0];
+  const worstForUser = sorted[sorted.length - 1];
   const bestBPH = wageUSD > 0 ? (wageUSD / bestForUser.bigmac_price_usd).toFixed(1) : '0';
   const worstBPH = wageUSD > 0 ? (wageUSD / worstForUser.bigmac_price_usd).toFixed(1) : '0';
 
   grid.innerHTML = '';
 
-  // KPI 1: Timer
   const card1 = document.createElement('div');
   card1.className = 'kpi-card';
   card1.innerHTML =
@@ -1210,7 +1178,6 @@ function renderKPI() {
     '<div class="kpi-sub">' + t('kpiCheapest').replace('{country}', cheapest.flag + ' ' + countryName(cheapest)) + '</div>';
   grid.appendChild(card1);
 
-  // KPI 2: Rank
   const card2 = document.createElement('div');
   card2.className = 'kpi-card';
   card2.innerHTML =
@@ -1220,7 +1187,6 @@ function renderKPI() {
     '<div class="kpi-sub">' + t('kpiRankDesc').replace('{n}', percentile) + '</div>';
   grid.appendChild(card2);
 
-  // KPI 3: Best / Worst
   const card3 = document.createElement('div');
   card3.className = 'kpi-card kpi-card-split';
   card3.innerHTML =
@@ -1239,7 +1205,7 @@ function renderKPI() {
 }
 
 // ============================================================
-//  CONTINENT CHART (Donut + Bar)
+//  CONTINENT CHART
 // ============================================================
 function getContinentKey(key) {
   var map = {
@@ -1304,7 +1270,6 @@ function renderContinentDonut() {
           cornerRadius: 8,
           callbacks: {
             label: function(ctx) {
-              var sym = currentMode === 'KO' ? '₩' : '$';
               var val = currentMode === 'KO'
                 ? '₩' + Math.round(ctx.raw).toLocaleString('ko-KR')
                 : '$' + ctx.raw.toFixed(2);
@@ -1409,7 +1374,7 @@ function showContinentBar(continentKey) {
 }
 
 // ============================================================
-//  CURRENCY VALUATION CHART (Diverging horizontal bar)
+//  CURRENCY VALUATION CHART
 // ============================================================
 let chartValuation = null;
 
@@ -1431,7 +1396,6 @@ function renderValuationCards() {
 
   container.innerHTML = '';
 
-  // Overvalued title
   var overTitle = document.createElement('div');
   overTitle.className = 'valuation-group-title over-title';
   overTitle.textContent = '🔴 ' + t('overvalued') + ' TOP 5';
@@ -1447,7 +1411,6 @@ function renderValuationCards() {
     container.appendChild(card);
   });
 
-  // Undervalued title
   var underTitle = document.createElement('div');
   underTitle.className = 'valuation-group-title under-title';
   underTitle.textContent = '🟢 ' + t('undervalued') + ' TOP 5';
@@ -1468,7 +1431,6 @@ function renderValuationBar() {
   var canvas = document.getElementById('chart-valuation');
   if (!canvas) return;
 
-  // Sort: most overvalued at top, most undervalued at bottom
   var data = countries
     .filter(function(c) { return c.over_under_valued_pct != null; })
     .sort(function(a, b) { return b.over_under_valued_pct - a.over_under_valued_pct; });
@@ -1482,14 +1444,12 @@ function renderValuationBar() {
     return 'rgba(107,107,107,0.50)';
   });
 
-  // Dynamic height
   var barH = 22;
   var chartH = data.length * barH + 80;
   canvas.parentElement.style.height = chartH + 'px';
 
   if (chartValuation) chartValuation.destroy();
 
-  // Plugin: zero line + zone labels
   var zeroLinePlugin = {
     id: 'zeroLine',
     afterDraw: function(chart) {
@@ -1507,7 +1467,6 @@ function renderValuationBar() {
         ctx.moveTo(x0, area.top);
         ctx.lineTo(x0, area.bottom);
         ctx.stroke();
-        // Label
         ctx.fillStyle = 'rgba(32,33,36,0.7)';
         ctx.font = '700 9px -apple-system, sans-serif';
         ctx.textAlign = 'center';
@@ -1577,11 +1536,10 @@ function renderValuationBar() {
       }
     }
   });
-
 }
 
 // ============================================================
-//  WORLD MAP — Purchasing Power Heatmap
+//  WORLD MAP
 // ============================================================
 var ISO_TO_CODE = {
   840:'US',32:'AR',36:'AU',76:'BR',826:'GB',124:'CA',152:'CL',156:'CN',
@@ -1591,7 +1549,6 @@ var ISO_TO_CODE = {
   710:'ZA',410:'KR',144:'LK',752:'SE',756:'CH',158:'TW',764:'TH',792:'TR',
   804:'UA',784:'AE',858:'UY',704:'VN',31:'AZ',48:'BH',320:'GT',340:'HN',
   400:'JO',414:'KW',422:'LB',498:'MD',558:'NI',512:'OM',634:'QA',862:'VE',
-  // EU mapped to some major EU countries for display
   56:'EU',276:'EU',380:'EU',528:'EU',620:'EU',40:'EU',246:'EU',
 };
 
@@ -1610,7 +1567,7 @@ function renderWorldMap() {
 
   var svg = d3.select('#world-map');
   var wrap = document.getElementById('map-wrap');
-  var w = wrap.clientWidth - 24; // padding
+  var w = wrap.clientWidth - 24;
   var h = Math.round(w * 0.52);
   mapW = w;
   mapH = h;
@@ -1619,7 +1576,6 @@ function renderWorldMap() {
   mapProjection = d3.geoNaturalEarth1().fitSize([w, h], { type: 'Sphere' });
   mapPath = d3.geoPath(mapProjection);
 
-  // Color scale: BPH (bigmacs per hour)
   var bphMap = {};
   countries.forEach(function(c) {
     bphMap[c.country_code] = wageUSD > 0 ? wageUSD / c.bigmac_price_usd : 0;
@@ -1633,17 +1589,14 @@ function renderWorldMap() {
 
       svg.selectAll('*').remove();
 
-      // Create a group for zoom/pan
       var g = svg.append('g').attr('class', 'map-g');
 
-      // Ocean
       g.append('path')
         .datum({ type: 'Sphere' })
         .attr('d', mapPath)
         .attr('fill', '#f0f4f8')
         .attr('stroke', '#ccc');
 
-      // Countries
       g.selectAll('.country')
         .data(mapCountriesGeo)
         .enter()
@@ -1682,16 +1635,13 @@ function renderWorldMap() {
             mapSelectedCode = code;
             highlightMapCountries(svg);
             showMapCard(code);
-            // Sync search dropdown
             var sel = document.getElementById('map-search');
             if (sel) sel.value = code;
           }
         });
 
-      // Highlight user's country + selected
       highlightMapCountries(svg);
 
-      // Setup zoom
       mapZoom = d3.zoom()
         .scaleExtent([1, 8])
         .on('zoom', function(event) {
@@ -1699,7 +1649,6 @@ function renderWorldMap() {
         });
       svg.call(mapZoom);
 
-      // Zoom buttons
       document.getElementById('map-zoom-in').addEventListener('click', function() {
         svg.transition().duration(300).call(mapZoom.scaleBy, 1.5);
       });
@@ -1715,7 +1664,6 @@ function renderWorldMap() {
       initMapSearch();
     });
   } else {
-    // Update colors only
     svg.selectAll('.country')
       .attr('fill', function(d) {
         var code = ISO_TO_CODE[+d.id];
@@ -1723,21 +1671,17 @@ function renderWorldMap() {
         return colorScale(Math.min(bphMap[code], 4));
       });
     highlightMapCountries(svg);
-    // Re-populate search with correct language
     initMapSearch();
   }
 }
 
 function highlightMapCountries(svg) {
-  // Reset all
   svg.selectAll('.country').attr('stroke', '#fff').attr('stroke-width', 0.5);
-  // Highlight user's country
   if (wageCountryCode) {
     svg.selectAll('.country').filter(function(d) {
       return ISO_TO_CODE[+d.id] === wageCountryCode;
     }).attr('stroke', '#FFC72C').attr('stroke-width', 2.5);
   }
-  // Highlight selected country
   if (mapSelectedCode && mapSelectedCode !== wageCountryCode) {
     svg.selectAll('.country').filter(function(d) {
       return ISO_TO_CODE[+d.id] === mapSelectedCode;
@@ -1749,18 +1693,15 @@ function zoomToCountry(code) {
   if (!mapCountriesGeo || !mapZoom || !mapPath) return;
   var svg = d3.select('#world-map');
 
-  // Find all geo features matching this country code (EU maps to multiple)
   var numIds = [];
   for (var key in ISO_TO_CODE) {
     if (ISO_TO_CODE[key] === code) numIds.push(+key);
   }
   if (numIds.length === 0) return;
 
-  // Get the primary feature (first match, or the one with largest area)
   var features = mapCountriesGeo.filter(function(f) { return numIds.indexOf(+f.id) >= 0; });
   if (features.length === 0) return;
 
-  // Compute combined bounds of all matching features
   var allBounds = features.map(function(f) { return mapPath.bounds(f); });
   var x0 = d3.min(allBounds, function(b) { return b[0][0]; });
   var y0 = d3.min(allBounds, function(b) { return b[0][1]; });
@@ -1772,7 +1713,6 @@ function zoomToCountry(code) {
   var cx = (x0 + x1) / 2;
   var cy = (y0 + y1) / 2;
 
-  // For very small countries, set a minimum bounding box
   if (dx < 20) dx = 60;
   if (dy < 20) dy = 60;
 
@@ -1790,7 +1730,6 @@ function initMapSearch() {
   var prev = sel.value;
   sel.innerHTML = '';
 
-  // Placeholder option
   var ph = document.createElement('option');
   ph.value = '';
   ph.textContent = currentMode === 'KO' ? '-- 나라를 선택하세요 --' : '-- Select a country --';
@@ -1807,7 +1746,6 @@ function initMapSearch() {
   });
   if (prev) sel.value = prev;
 
-  // Remove old listener by replacing element
   var newSel = sel.cloneNode(true);
   sel.parentNode.replaceChild(newSel, sel);
   newSel.addEventListener('change', function() {
@@ -1856,7 +1794,6 @@ function showMapCard(code) {
   var myC = countries.find(function(x) { return x.country_code === wageCountryCode; });
   var myBPH = myC && wageUSD > 0 ? wageUSD / myC.bigmac_price_usd : 0;
 
-  // Emoji visualization with staggered popup animation
   var emojiCount = Math.floor(bph);
   var totalEmoji = emojiCount;
   if (bph - emojiCount >= 0.5) totalEmoji++;
@@ -1873,7 +1810,6 @@ function showMapCard(code) {
   }
   if (totalEmoji === 0) emojiStr = '<span class="emoji-pop">😢</span>';
 
-  // Comparison text
   var compText = '';
   if (myC && myC.country_code !== code) {
     var ratio = myBPH > 0 ? bph / myBPH : 0;
@@ -1886,7 +1822,6 @@ function showMapCard(code) {
     }
   }
 
-  // Bar comparison
   var maxBar = Math.max(bph, myBPH, 0.1);
   var selectedPct = Math.round((bph / maxBar) * 100);
   var myPct = Math.round((myBPH / maxBar) * 100);
@@ -1918,9 +1853,8 @@ function showMapCard(code) {
     : '');
 }
 
-
 // ============================================================
-//  RENDER ALL — called from init and toggle
+//  RENDER ALL
 // ============================================================
 function renderAll() {
   renderExchange();
@@ -1944,13 +1878,11 @@ function updateToggleBtn() {
 document.getElementById('toggle-lang').addEventListener('click', () => {
   currentMode = currentMode === 'EN' ? 'KO' : 'EN';
   localStorage.setItem('bigmac_mode', currentMode);
-  // Reset exchange base amount for the new mode
   const baseInput = document.getElementById('exchange-base-input');
   if (baseInput) delete baseInput.dataset.userEdited;
 
   updateToggleBtn();
   applyI18n();
-  // Re-populate wage dropdown with correct language names
   var wSelect = document.getElementById('wage-country');
   if (wSelect && countries.length > 0) {
     wSelect.innerHTML = '';
@@ -1963,7 +1895,6 @@ document.getElementById('toggle-lang').addEventListener('click', () => {
     wSelect.value = wageCountryCode;
   }
   renderAll();
-  // Re-render history chart if a country was selected
   if (selectedExCountry) {
     onExchangeCardClick(selectedExCountry);
   }
