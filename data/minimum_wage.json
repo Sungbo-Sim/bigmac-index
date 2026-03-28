@@ -1,0 +1,287 @@
+{
+  "last_updated": "2026-03-24",
+  "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage",
+  "notes": "Hourly rates converted from monthly/annual figures using 173.33 standard monthly hours where applicable. Countries with no statutory national minimum wage are set to null. Data reflects rates in effect as of early 2025.",
+  "wages": {
+    "US": {
+      "hourly_usd": 7.25,
+      "notes": "Federal minimum wage. Many states set higher rates (e.g., California $16.50/hr, New York $16.00/hr).",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "AR": {
+      "hourly_usd": 1.44,
+      "notes": "Monthly minimum wage ARS 267,717 (Jan 2025). Converted at ~ARS 1,040/USD. Monthly / 173.33 = hourly.",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "AU": {
+      "hourly_usd": 11.77,
+      "notes": "National Minimum Wage AUD 24.10/hr (July 2024). Converted at AUD 1.65/USD (approx 2025 rate).",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "BR": {
+      "hourly_usd": 1.96,
+      "notes": "Monthly minimum wage BRL 1,518 (2024). BRL 1,518 / 173.33 = BRL 8.76/hr. Converted at BRL 4.97/USD (approx Jan 2025).",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "GB": {
+      "hourly_usd": 15.34,
+      "notes": "National Living Wage GBP 11.44/hr (April 2024, age 21+). Converted at GBP 0.79/USD (approx Jan 2025). Note: from April 2025, rate rises to GBP 12.21/hr.",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "CA": {
+      "hourly_usd": 11.40,
+      "notes": "Federal minimum wage CAD 17.30/hr (April 2024). Provincial minimums vary. Converted at CAD 1.44/USD (approx Jan 2025).",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "CL": {
+      "hourly_usd": 2.82,
+      "notes": "Monthly minimum wage CLP 500,000 (Aug 2024). CLP 500,000 / 173.33 = CLP 2,884/hr. Converted at CLP 960/USD (approx Jan 2025).",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "CN": {
+      "hourly_usd": 2.77,
+      "notes": "Minimum wages vary by region. Shanghai highest at CNY 2,690/month (2024). CNY 2,690 / 173.33 = CNY 15.52/hr. Converted at CNY 7.24/USD. National average used here is approximate.",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "CO": {
+      "hourly_usd": 1.68,
+      "notes": "Monthly minimum wage COP 1,300,000 (2024). COP 1,300,000 / 173.33 = COP 7,501/hr. Converted at COP 4,100/USD (approx Jan 2025).",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "CR": {
+      "hourly_usd": 4.01,
+      "notes": "General minimum wage varies by sector. Unskilled worker monthly rate CRC 390,000 (2024 estimate). CRC 390,000 / 173.33 = CRC 2,250/hr. Converted at CRC 512/USD (approx Jan 2025).",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "CZ": {
+      "hourly_usd": 6.79,
+      "notes": "Minimum wage CZK 18,900/month (Jan 2025). CZK 18,900 / 173.33 = CZK 109/hr. Converted at CZK 23.70/USD (approx Jan 2025).",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "DK": {
+      "hourly_usd": null,
+      "notes": "Denmark has no statutory national minimum wage. Wages are set through collective bargaining agreements. Effective minimum via collective agreements is approximately DKK 110-120/hr (~USD 16-18).",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "EG": {
+      "hourly_usd": 0.29,
+      "notes": "Monthly minimum wage EGP 6,000 (Sept 2024 government sector; private sector EGP 3,500 prior). Using EGP 6,000. EGP 6,000 / 173.33 = EGP 34.6/hr. Converted at EGP 50.2/USD (approx Jan 2025).",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "EU": {
+      "hourly_usd": null,
+      "notes": "The Euro area is an aggregate of multiple countries with different national minimum wages. No single EU minimum wage exists. Individual EU member state data should be referenced separately.",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "HK": {
+      "hourly_usd": 4.96,
+      "notes": "Statutory Minimum Wage HKD 40.00/hr (May 2023). Converted at HKD 7.84/USD (approx Jan 2025, HKD pegged to USD).",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "HU": {
+      "hourly_usd": 5.40,
+      "notes": "Monthly minimum wage HUF 266,800 (Jan 2024). HUF 266,800 / 173.33 = HUF 1,539/hr. Converted at HUF 375/USD (approx Jan 2025). Skilled worker rate is HUF 348,800/month.",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "IN": {
+      "hourly_usd": 0.69,
+      "notes": "National floor-level minimum wage INR 178/day (2017, non-updated centrally). Using INR 178/day / 8 hrs = INR 22.25/hr (national floor). Converted at INR 86.5/USD (approx Jan 2025). State rates vary significantly higher.",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "ID": {
+      "hourly_usd": 1.42,
+      "notes": "Provincial minimum wages vary. National average approximately IDR 3,100,000/month (2025). IDR 3,100,000 / 173.33 = IDR 17,887/hr. Converted at IDR 16,200/USD (approx Jan 2025).",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "IL": {
+      "hourly_usd": 9.45,
+      "notes": "Minimum wage ILS 5,880.02/month (April 2024). Hourly ILS 32.30/hr. Converted at ILS 3.77/USD (approx Jan 2025).",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "JP": {
+      "hourly_usd": 6.70,
+      "notes": "National weighted average minimum wage JPY 1,055/hr (Oct 2024). Converted at JPY 155/USD (approx Jan 2025).",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "MY": {
+      "hourly_usd": 3.30,
+      "notes": "Minimum wage MYR 1,700/month (Jan 2023). MYR 1,700 / 173.33 = MYR 9.81/hr. Converted at MYR 4.46/USD (approx Jan 2025).",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "MX": {
+      "hourly_usd": 1.26,
+      "notes": "Daily minimum wage MXN 248.93/day (Jan 2025). MXN 248.93 / 8 hrs = MXN 31.12/hr. Converted at MXN 20.45/USD (approx Jan 2025).",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "NZ": {
+      "hourly_usd": 11.20,
+      "notes": "Minimum wage NZD 23.15/hr (April 2024). Converted at NZD 1.77/USD (approx Jan 2025).",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "NO": {
+      "hourly_usd": null,
+      "notes": "Norway has no statutory national minimum wage. Wages are set through collective bargaining. Effective rates vary by sector, generally NOK 180-220/hr (~USD 16-20). Cleaning industry minimum NOK 223.60/hr (2024).",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "PK": {
+      "hourly_usd": 0.51,
+      "notes": "Monthly minimum wage PKR 37,000 (July 2024, federal). PKR 37,000 / 173.33 = PKR 213.5/hr. Converted at PKR 278.5/USD (approx Jan 2025).",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "PE": {
+      "hourly_usd": 1.54,
+      "notes": "Monthly minimum wage PEN 1,025 (May 2022). PEN 1,025 / 173.33 = PEN 5.91/hr. Converted at PEN 3.84/USD (approx Jan 2025).",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "PH": {
+      "hourly_usd": 1.99,
+      "notes": "Daily minimum wage varies by region. NCR (Metro Manila) PHP 610/day (June 2024). PHP 610 / 8 hrs = PHP 76.25/hr. Converted at PHP 58.0/USD (approx Jan 2025).",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "PL": {
+      "hourly_usd": 5.28,
+      "notes": "Minimum wage PLN 4,300/month (Jan 2025). PLN 4,300 / 173.33 = PLN 24.81/hr. Converted at PLN 4.08/USD (approx Jan 2025). Also hourly minimum PLN 28.10/hr from July 2024.",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "RO": {
+      "hourly_usd": 4.03,
+      "notes": "Minimum wage RON 3,700/month (Oct 2024). RON 3,700 / 173.33 = RON 21.35/hr. Converted at RON 4.57/USD (approx Jan 2025).",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "RU": {
+      "hourly_usd": 1.37,
+      "notes": "Monthly minimum wage RUB 19,242 (Jan 2024). RUB 19,242 / 173.33 = RUB 111/hr. Converted at RUB 89.7/USD (approx Jan 2025, market rate).",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "SA": {
+      "hourly_usd": null,
+      "notes": "Saudi Arabia has no statutory national minimum wage for private sector workers. A minimum wage of SAR 4,000/month applies to Saudi nationals only (Saudization). Expatriate workers (majority of workforce) have no minimum wage protection.",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "SG": {
+      "hourly_usd": null,
+      "notes": "Singapore has no statutory national minimum wage. A Progressive Wage Model (PWM) applies to specific sectors (cleaning, security, landscaping, lift maintenance, retail, food services, waste management). PWM rates vary; e.g., cleaners SGD 3.50/hr minimum (2024).",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "ZA": {
+      "hourly_usd": 1.44,
+      "notes": "National Minimum Wage ZAR 27.58/hr (March 2024). Converted at ZAR 18.37/USD (approx Jan 2025).",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "KR": {
+      "hourly_usd": 6.86,
+      "notes": "Minimum wage KRW 10,030/hr (2024). Converted at KRW 1,462/USD (approx Jan 2025). 2025 rate is KRW 10,030/hr.",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "LK": {
+      "hourly_usd": 0.83,
+      "notes": "Monthly minimum wage LKR 17,500 (private sector, 2024 estimate). LKR 17,500 / 173.33 = LKR 101/hr. Converted at LKR 300/USD (approx Jan 2025). Wages vary by sector.",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "SE": {
+      "hourly_usd": null,
+      "notes": "Sweden has no statutory national minimum wage. Wages are set entirely through collective bargaining agreements between unions and employer organizations. Typical collective agreement minimums range from SEK 110-150/hr (~USD 10-14).",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "CH": {
+      "hourly_usd": 25.99,
+      "notes": "No federal minimum wage in Switzerland. Cantonal minimums exist: Geneva CHF 24.32/hr (2024, highest). Converted at CHF 0.90/USD (approx Jan 2025). Other cantons: Neuchatel CHF 21.00/hr, Jura CHF 20.60/hr, Ticino CHF 19.50/hr.",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "TW": {
+      "hourly_usd": 6.31,
+      "notes": "Minimum wage TWD 183/hr (Jan 2024). Monthly minimum TWD 27,470. Converted at TWD 32.45/USD (approx Jan 2025). 2025 rate TWD 190/hr effective Jan 2025.",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "TH": {
+      "hourly_usd": 1.29,
+      "notes": "Daily minimum wage varies by province. National average THB 363/day (Jan 2025, some regions). THB 363 / 8 hrs = THB 45.4/hr. Converted at THB 34.50/USD (approx Jan 2025).",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "TR": {
+      "hourly_usd": 3.13,
+      "notes": "Monthly minimum wage TRY 17,002.12 (Jan 2025). TRY 17,002 / 173.33 = TRY 98.1/hr. Converted at TRY 35.60/USD (approx Jan 2025).",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "UA": {
+      "hourly_usd": 1.84,
+      "notes": "Monthly minimum wage UAH 8,000 (Jan 2024). UAH 8,000 / 173.33 = UAH 46.15/hr. Converted at UAH 41.17/USD (approx Jan 2025). Wartime economy rate.",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "AE": {
+      "hourly_usd": null,
+      "notes": "UAE has no statutory national minimum wage for private sector workers. A basic wage structure is mandated under the Wage Protection System, but no specific minimum hourly rate is set nationally for most workers.",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "UY": {
+      "hourly_usd": 5.77,
+      "notes": "Monthly minimum wage UYU 22,268 (Jan 2024). UYU 22,268 / 173.33 = UYU 128.5/hr. Converted at UYU 39.97/USD (approx Jan 2025).",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "VE": {
+      "hourly_usd": 0.03,
+      "notes": "Monthly minimum wage USD 5.13 equivalent (set by government in USD terms, March 2024, via official exchange rate). Effective purchasing power extremely limited. Monthly / 173.33 = hourly.",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "VN": {
+      "hourly_usd": 0.95,
+      "notes": "Monthly minimum wage varies by region. Region 1 (Hanoi/HCMC) VND 4,960,000 (July 2024). VND 4,960,000 / 173.33 = VND 28,617/hr. Converted at VND 25,450/USD (approx Jan 2025).",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "AZ": {
+      "hourly_usd": 0.84,
+      "notes": "Monthly minimum wage AZN 345 (2024). AZN 345 / 173.33 = AZN 1.99/hr. Converted at AZN 1.70/USD (official rate, approx Jan 2025).",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "BH": {
+      "hourly_usd": null,
+      "notes": "Bahrain has no statutory national minimum wage for private sector workers. A minimum wage of BHD 300/month applies to Bahraini nationals in the private sector only.",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "GT": {
+      "hourly_usd": 1.65,
+      "notes": "Daily minimum wage GTQ 103.56/day for agricultural and non-agricultural workers (2024). GTQ 103.56 / 8 hrs = GTQ 12.95/hr. Converted at GTQ 7.75/USD (approx Jan 2025).",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "HN": {
+      "hourly_usd": 2.14,
+      "notes": "Monthly minimum wage varies by sector/company size. Average HNL 11,904.45/month (2024, trade/service sector mid-size). HNL 11,904 / 173.33 = HNL 68.7/hr. Converted at HNL 24.65/USD (approx Jan 2025).",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "JO": {
+      "hourly_usd": 2.02,
+      "notes": "Monthly minimum wage JOD 260 (2022). JOD 260 / 173.33 = JOD 1.50/hr. Converted at JOD 0.71/USD (approx Jan 2025, JOD pegged).",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "KW": {
+      "hourly_usd": null,
+      "notes": "Kuwait has no statutory national minimum wage for private sector workers, including expatriates who form the majority of the workforce. A minimum wage applies only to Kuwaiti nationals in specific sectors.",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "LB": {
+      "hourly_usd": 0.06,
+      "notes": "Monthly minimum wage LBP 9,000,000 (2024, after increases due to currency collapse). LBP 9,000,000 / 173.33 = LBP 51,924/hr. Converted at LBP 89,500/USD (Sayrafa/market rate, approx Jan 2025). Real purchasing power severely eroded.",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "MD": {
+      "hourly_usd": 1.88,
+      "notes": "Monthly minimum wage MDL 5,000 (Jan 2025). MDL 5,000 / 173.33 = MDL 28.85/hr. Converted at MDL 17.76/USD (approx Jan 2025).",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "NI": {
+      "hourly_usd": 0.74,
+      "notes": "Monthly minimum wage varies by sector. Average NIO 7,658 (2024 agriculture/agro-industry sector). NIO 7,658 / 173.33 = NIO 44.2/hr. Converted at NIO 36.60/USD (approx Jan 2025).",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "OM": {
+      "hourly_usd": null,
+      "notes": "Oman has a minimum wage of OMR 325/month for Omani nationals (2013, not updated). No minimum wage for expatriate workers. OMR 325 / 173.33 = OMR 1.88/hr, or ~USD 4.88/hr. Applies to nationals only.",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    },
+    "QA": {
+      "hourly_usd": 1.02,
+      "notes": "Monthly minimum wage QAR 1,000 (2021, applies to all workers). QAR 1,000 / 173.33 = QAR 5.77/hr. Converted at QAR 3.64/USD (QAR pegged, approx Jan 2025). Food/housing allowances may add QAR 500-800/month.",
+      "source": "https://en.wikipedia.org/wiki/List_of_countries_by_minimum_wage"
+    }
+  }
+}
