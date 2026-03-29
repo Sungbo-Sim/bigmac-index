@@ -1,9 +1,57 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>The Real Big Mac Index</title>
+
+  <!-- ===== SEO 기본 태그 ===== -->
+  <title>빅맥 지수 — 내 시급으로 전 세계 물가 비교 | Big Mac Index</title>
+  <meta name="description" content="시급을 입력하면 전 세계 56개국 빅맥 구매력을 실시간으로 비교해보세요. 세계 지도 히트맵, 환율 계산기, 구매력 평가(PPP) 차트를 한 눈에 확인하세요." />
+  <meta name="keywords" content="빅맥지수, 빅맥 지수, Big Mac Index, 구매력평가, PPP, 세계물가비교, 환율비교, 빅맥가격, 나라별 물가, 시급 계산기, burgernomics" />
+  <meta name="author" content="Sungbo Sim" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://bigmac-index.vercel.app/" />
+
+  <!-- ===== Open Graph (카카오톡·SNS 공유 미리보기) ===== -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://bigmac-index.vercel.app/" />
+  <meta property="og:title" content="빅맥 지수 — 내 시급으로 전 세계 물가 비교" />
+  <meta property="og:description" content="빅맥 한 개를 사려면 몇 분 일해야 할까? 56개국 실시간 빅맥 구매력 지도. 시급을 입력하면 나라별 구매력을 바로 비교할 수 있어요." />
+  <meta property="og:locale" content="ko_KR" />
+  <meta property="og:locale:alternate" content="en_US" />
+  <meta property="og:site_name" content="The Real Big Mac Index" />
+
+  <!-- ===== Twitter Card ===== -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="빅맥 지수 — 내 시급으로 전 세계 물가 비교" />
+  <meta name="twitter:description" content="빅맥 한 개를 사려면 몇 분 일해야 할까? 56개국 실시간 빅맥 구매력 지도." />
+
+  <!-- ===== 구조화 데이터 (Google 리치 스니펫) ===== -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "리얼 빅맥 지수 (The Real Big Mac Index)",
+    "alternateName": "Big Mac Index Interactive Map",
+    "url": "https://bigmac-index.vercel.app/",
+    "description": "전 세계 56개국 빅맥 가격과 실시간 환율로 구매력을 비교하는 인터랙티브 지도. 내 시급을 입력하면 나라별로 빅맥을 몇 개 살 수 있는지 바로 확인할 수 있습니다.",
+    "applicationCategory": "FinanceApplication",
+    "operatingSystem": "Web Browser",
+    "inLanguage": ["ko", "en"],
+    "author": {
+      "@type": "Person",
+      "name": "Sungbo Sim",
+      "url": "https://github.com/Sungbo-Sim"
+    },
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "keywords": "빅맥지수, Big Mac Index, 구매력평가, PPP, 세계물가비교, 환율"
+  }
+  </script>
+
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -22,7 +70,7 @@
   <main class="main">
 
     <!-- ===== SECTION: Exchange Rates ===== -->
-    <section class="section" id="section-exchange">
+    <section class="section" id="section-exchange" aria-label="환율 계산기">
       <div class="container">
         <h2 class="section-title" data-i18n="section_exchange"></h2>
         <div class="exchange-layout">
@@ -65,7 +113,7 @@
     </section>
 
     <!-- ===== SECTION: Wage Calculator + KPI ===== -->
-    <section class="section section-alt" id="section-wage">
+    <section class="section section-alt" id="section-wage" aria-label="시급 계산기">
       <div class="container">
         <h2 class="section-title" data-i18n="section_wage"></h2>
         <div class="wage-kpi-layout">
@@ -100,7 +148,7 @@
     </section>
 
     <!-- ===== SECTION: Global Ranking ===== -->
-    <section class="section section-alt" id="section-ranking">
+    <section class="section section-alt" id="section-ranking" aria-label="전세계 빅맥 가격 랭킹">
       <div class="container">
         <h2 class="section-title" data-i18n="section_ranking"></h2>
         <div class="ranking-layout">
@@ -122,10 +170,8 @@
       </div>
     </section>
 
-    <!-- Price Chart merged into Ranking section above -->
-
     <!-- ===== SECTION: Continent ===== -->
-    <section class="section section-alt" id="section-continent">
+    <section class="section section-alt" id="section-continent" aria-label="대륙별 빅맥 가격 비교">
       <div class="container">
         <h2 class="section-title" data-i18n="section_continent"></h2>
         <div class="continent-wrap">
@@ -140,7 +186,7 @@
     </section>
 
     <!-- ===== SECTION: Valuation ===== -->
-    <section class="section" id="section-valuation">
+    <section class="section" id="section-valuation" aria-label="통화 고평가 저평가">
       <div class="container">
         <h2 class="section-title" data-i18n="section_valuation"></h2>
         <div class="valuation-layout">
@@ -159,7 +205,7 @@
     </section>
 
     <!-- ===== SECTION: Big Mac Purchasing Power Map ===== -->
-    <section class="section section-alt" id="section-map">
+    <section class="section section-alt" id="section-map" aria-label="빅맥 구매력 세계 지도">
       <div class="container container-wide">
         <h2 class="section-title" data-i18n="section_map"></h2>
         <div class="map-layout">
