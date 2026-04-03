@@ -1044,6 +1044,25 @@ ul { list-style: none; }
 }
 
 /* Search dropdown */
+.map-selectors {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.map-selectors .map-search-wrap {
+  flex: 1;
+  margin-bottom: 0;
+}
+.map-vs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  padding-top: 16px;
+}
 .map-search-wrap {
   background: var(--card);
   border-radius: 16px;

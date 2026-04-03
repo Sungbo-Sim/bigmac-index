@@ -133,6 +133,8 @@
        mapLegendHigh: "High",
        mapLegendLow: "Low",
        mapSearchLabel: "Search country",
+       mapMyCountry: "My Country",
+       mapCompareCountry: "Compare Country",
      },
      KO: {
        title: "리얼 빅맥 지수 🍔",
@@ -195,6 +197,8 @@
        mapLegendHigh: "많이",
        mapLegendLow: "적게",
        mapSearchLabel: "나라 검색",
+       mapMyCountry: "나의 나라",
+       mapCompareCountry: "비교할 나라",
      }
    };
    
@@ -513,8 +517,8 @@
      countriesList.forEach(function(c) {
        const w = wageMap[c.country_code];
        if (w) {
-         c.minimum_wage_usd = w.hourly_usd || null;
-         c.minimum_wage_bigmacs_per_hour = w.bigmacs_per_hour || null;
+         if (w.hourly_usd != null) c.minimum_wage_usd = w.hourly_usd;
+         if (w.bigmacs_per_hour != null) c.minimum_wage_bigmacs_per_hour = w.bigmacs_per_hour;
        }
      });
    }
@@ -1456,7 +1460,9 @@
    
      const minutesCheap = wageUSD > 0 ? Math.round((cheapest.bigmac_price_usd / wageUSD) * 60) : 0;
    
-     const userBPH = wageUSD > 0 ? wageUSD / cheapest.bigmac_price_usd : 0;
+     const userCountry = countries.find(x => x.country_code === wageCountryCode);
+     const userBmPrice = userCountry ? userCountry.bigmac_price_usd : cheapest.bigmac_price_usd;
+     const userBPH = wageUSD > 0 ? wageUSD / userBmPrice : 0;
      const allMinWageBPH = countries
        .filter(c => c.minimum_wage_bigmacs_per_hour != null)
        .map(c => c.minimum_wage_bigmacs_per_hour)
@@ -1865,6 +1871,7 @@
    var mapPath = null;
    var mapCountriesGeo = null;
    var mapSelectedCode = null;
+   var mapMyCountryCode = null;
    var mapW = 0;
    var mapH = 0;
    
@@ -1983,10 +1990,11 @@
    }
    
    function highlightMapCountries(svg) {
+     var myCode = mapMyCountryCode || wageCountryCode;
      svg.selectAll('.country').attr('stroke', '#fff').attr('stroke-width', 0.5);
-     if (wageCountryCode) {
+     if (myCode) {
        svg.selectAll('.country').filter(function(d) {
-         return ISO_TO_CODE[+d.id] === wageCountryCode;
+         return ISO_TO_CODE[+d.id] === myCode;
        }).attr('stroke', '#FFC72C').attr('stroke-width', 2.5);
      }
      if (mapSelectedCode && mapSelectedCode !== wageCountryCode) {
@@ -2033,15 +2041,16 @@
    
    function initMapSearch() {
      var sel = document.getElementById('map-search');
+     var mySel = document.getElementById('map-my-country');
      if (!sel) return;
      var prev = sel.value;
      sel.innerHTML = '';
-   
+
      var ph = document.createElement('option');
      ph.value = '';
-     ph.textContent = currentMode === 'KO' ? '-- 나라를 선택하세요 --' : '-- Select a country --';
+     ph.textContent = currentMode === 'KO' ? '-- 비교할 나라 선택 --' : '-- Select a country --';
      sel.appendChild(ph);
-   
+
      var sorted = [...countries].sort(function(a, b) {
        return countryName(a).localeCompare(countryName(b));
      });
@@ -2052,7 +2061,7 @@
        sel.appendChild(opt);
      });
      if (prev) sel.value = prev;
-   
+
      var newSel = sel.cloneNode(true);
      sel.parentNode.replaceChild(newSel, sel);
      newSel.addEventListener('change', function() {
@@ -2063,6 +2072,31 @@
        showMapCard(code);
        zoomToCountry(code);
      });
+
+     // My Country selector
+     if (mySel) {
+       mySel.innerHTML = '';
+       sorted.forEach(function(c) {
+         var opt = document.createElement('option');
+         opt.value = c.country_code;
+         opt.textContent = c.flag + ' ' + countryName(c);
+         mySel.appendChild(opt);
+       });
+       mySel.value = mapMyCountryCode || wageCountryCode || 'KR';
+       if (!mapMyCountryCode) mapMyCountryCode = mySel.value;
+
+       var myVal = mySel.value;
+       var newMySel = mySel.cloneNode(true);
+       mySel.parentNode.replaceChild(newMySel, mySel);
+       newMySel.value = myVal;
+       newMySel.addEventListener('change', function() {
+         var code = this.value;
+         if (!code) return;
+         mapMyCountryCode = code;
+         highlightMapCountries(d3.select('#world-map'));
+         if (mapSelectedCode) showMapCard(mapSelectedCode);
+       });
+     }
    }
    
    function showMapTooltip(event, code) {
@@ -2097,8 +2131,9 @@
      var card = document.getElementById('map-card');
      card.className = 'map-card map-card-show';
    
+     var myCode = mapMyCountryCode || wageCountryCode;
      var bph = wageUSD > 0 ? wageUSD / c.bigmac_price_usd : 0;
-     var myC = countries.find(function(x) { return x.country_code === wageCountryCode; });
+     var myC = countries.find(function(x) { return x.country_code === myCode; });
      var myBPH = myC && wageUSD > 0 ? wageUSD / myC.bigmac_price_usd : 0;
    
      var emojiCount = Math.floor(bph);
