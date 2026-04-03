@@ -1245,6 +1245,27 @@ ul { list-style: none; }
   color: rgba(255,255,255,0.7);
   font-size: 0.75rem;
 }
+.footer-author {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.85);
+}
+.footer-author a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+  padding: 2px 8px;
+  border: 1px solid rgba(255,255,255,0.4);
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+.footer-author a:hover {
+  background: rgba(255,255,255,0.15);
+}
 
 /* ===== ANIMATIONS ===== */
 @keyframes fadeIn {

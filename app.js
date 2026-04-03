@@ -105,7 +105,7 @@
        continent_africa: "Africa",
        continent_oceania: "Oceania",
        toggleLabel: "EN / USD",
-       footer: "Data: The Economist (Jan 2025) · Exchange rates: open.er-api.com · Not affiliated with McDonald's",
+       footer: "Data: The Economist ({date}) · Exchange rates: open.er-api.com · Not affiliated with McDonald's",
        perHour: "/ hr",
        equivUSD: "= ${v} USD",
        bestCountry: "Best Value",
@@ -169,7 +169,7 @@
        continent_africa: "아프리카",
        continent_oceania: "오세아니아",
        toggleLabel: "KO / ₩",
-       footer: "데이터: The Economist (2025.01) · 환율: open.er-api.com · 맥도날드와 무관합니다",
+       footer: "데이터: The Economist ({date}) · 환율: open.er-api.com · 맥도날드와 무관합니다",
        perHour: "/ 시간",
        equivUSD: "= ₩{v} KRW",
        bestCountry: "가성비 최고",
@@ -618,11 +618,28 @@
    // ============================================================
    //  APPLY i18n
    // ============================================================
+   function getDataDate() {
+     if (countries.length === 0) return '';
+     var d = countries[0].data_date || '';
+     if (!d) return '';
+     // "2026-01" → "Jan 2026" (EN) or "2026.01" (KO)
+     var parts = d.split('-');
+     if (parts.length < 2) return d;
+     var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+     var mi = parseInt(parts[1], 10) - 1;
+     if (currentMode === 'KO') return parts[0] + '.' + parts[1];
+     return months[mi] + ' ' + parts[0];
+   }
+
    function applyI18n() {
+     var dataDate = getDataDate();
      document.querySelectorAll('[data-i18n]').forEach(el => {
        const key = el.dataset.i18n;
-       const text = t(key);
-       if (text !== key) el.textContent = text;
+       var text = t(key);
+       if (text !== key) {
+         text = text.replace('{date}', dataDate);
+         el.textContent = text;
+       }
      });
    }
    
