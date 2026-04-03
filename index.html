@@ -69,84 +69,6 @@
 
   <main class="main">
 
-    <!-- ===== SECTION: Exchange Rates ===== -->
-    <section class="section" id="section-exchange" aria-label="환율 계산기">
-      <div class="container">
-        <h2 class="section-title" data-i18n="section_exchange"></h2>
-        <div class="exchange-layout">
-          <!-- LEFT: rate cards -->
-          <div class="exchange-left">
-            <div class="exchange-top-row">
-              <div class="exchange-base-input-wrap">
-                <span class="exchange-base-symbol" id="exchange-base-symbol"></span>
-                <input type="number" id="exchange-base-input" class="exchange-base-input" min="1" step="1" />
-                <span class="exchange-base-label" id="exchange-base-label"></span>
-              </div>
-              <div class="exchange-timestamp" id="exchange-timestamp"></div>
-            </div>
-            <div class="exchange-cards" id="exchange-cards"></div>
-            <div class="exchange-nav">
-              <button class="arrow-btn" id="exchange-prev" aria-label="Previous">&larr;</button>
-              <span class="page-indicator" id="exchange-page"></span>
-              <button class="arrow-btn" id="exchange-next" aria-label="Next">&rarr;</button>
-            </div>
-          </div>
-          <!-- RIGHT: history chart -->
-          <div class="exchange-right-panel" id="exchange-chart-panel">
-            <div class="exchange-chart-header">
-              <span class="exchange-chart-title" id="exchange-chart-title" data-i18n="chartSelectCountry"></span>
-            </div>
-            <div class="exchange-period-tabs" id="exchange-period-tabs">
-              <button class="period-tab" data-period="3M">3M</button>
-              <button class="period-tab active" data-period="6M">6M</button>
-              <button class="period-tab" data-period="1Y">1Y</button>
-              <button class="period-tab" data-period="3Y">3Y</button>
-              <button class="period-tab" data-period="5Y">5Y</button>
-            </div>
-            <div class="exchange-chart-wrap">
-              <canvas id="chart-exchange-history"></canvas>
-              <div class="exchange-chart-loading" id="exchange-chart-loading" data-i18n="chartSelectCountry"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== SECTION: Wage Calculator + KPI ===== -->
-    <section class="section section-alt" id="section-wage" aria-label="시급 계산기">
-      <div class="container">
-        <h2 class="section-title" data-i18n="section_wage"></h2>
-        <div class="wage-kpi-layout">
-          <!-- LEFT: Calculator -->
-          <div class="wage-calculator" id="wage-calculator">
-            <div class="wage-row">
-              <label class="wage-label" data-i18n="selectCountry"></label>
-              <select class="wage-select" id="wage-country"></select>
-            </div>
-            <div class="quick-btns" id="quick-btns">
-              <button class="quick-btn active" data-code="KR">🇰🇷</button>
-              <button class="quick-btn" data-code="US">🇺🇸</button>
-              <button class="quick-btn" data-code="JP">🇯🇵</button>
-              <button class="quick-btn" data-code="GB">🇬🇧</button>
-              <button class="quick-btn" data-code="EU">🇪🇺</button>
-              <button class="quick-btn" data-code="AU">🇦🇺</button>
-            </div>
-            <div class="wage-row">
-              <label class="wage-label" data-i18n="hourlyWage"></label>
-              <div class="wage-input-wrap">
-                <span class="wage-symbol" id="wage-symbol">₩</span>
-                <input type="number" id="wage-input" class="wage-input" value="9860" min="1" step="100" />
-                <span class="wage-suffix" data-i18n="perHour"></span>
-              </div>
-            </div>
-            <div class="wage-usd-equiv" id="wage-usd-equiv"></div>
-          </div>
-          <!-- RIGHT: KPI widgets -->
-          <div class="kpi-grid" id="kpi-grid"></div>
-        </div>
-      </div>
-    </section>
-
     <!-- ===== SECTION: Global Ranking ===== -->
     <section class="section section-alt" id="section-ranking" aria-label="전세계 빅맥 가격 랭킹">
       <div class="container">
@@ -235,6 +157,84 @@
               </div>
             </div>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SECTION: Exchange Rates ===== -->
+    <section class="section" id="section-exchange" aria-label="환율 계산기">
+      <div class="container">
+        <h2 class="section-title" data-i18n="section_exchange"></h2>
+        <div class="exchange-layout">
+          <!-- LEFT: rate cards -->
+          <div class="exchange-left">
+            <div class="exchange-top-row">
+              <div class="exchange-base-input-wrap">
+                <span class="exchange-base-symbol" id="exchange-base-symbol"></span>
+                <input type="number" id="exchange-base-input" class="exchange-base-input" min="1" step="1" />
+                <span class="exchange-base-label" id="exchange-base-label"></span>
+              </div>
+              <div class="exchange-timestamp" id="exchange-timestamp"></div>
+            </div>
+            <div class="exchange-cards" id="exchange-cards"></div>
+            <div class="exchange-nav">
+              <button class="arrow-btn" id="exchange-prev" aria-label="Previous">&larr;</button>
+              <span class="page-indicator" id="exchange-page"></span>
+              <button class="arrow-btn" id="exchange-next" aria-label="Next">&rarr;</button>
+            </div>
+          </div>
+          <!-- RIGHT: history chart -->
+          <div class="exchange-right-panel" id="exchange-chart-panel">
+            <div class="exchange-chart-header">
+              <span class="exchange-chart-title" id="exchange-chart-title" data-i18n="chartSelectCountry"></span>
+            </div>
+            <div class="exchange-period-tabs" id="exchange-period-tabs">
+              <button class="period-tab" data-period="3M">3M</button>
+              <button class="period-tab active" data-period="6M">6M</button>
+              <button class="period-tab" data-period="1Y">1Y</button>
+              <button class="period-tab" data-period="3Y">3Y</button>
+              <button class="period-tab" data-period="5Y">5Y</button>
+            </div>
+            <div class="exchange-chart-wrap">
+              <canvas id="chart-exchange-history"></canvas>
+              <div class="exchange-chart-loading" id="exchange-chart-loading" data-i18n="chartSelectCountry"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SECTION: Wage Calculator + KPI ===== -->
+    <section class="section section-alt" id="section-wage" aria-label="시급 계산기">
+      <div class="container">
+        <h2 class="section-title" data-i18n="section_wage"></h2>
+        <div class="wage-kpi-layout">
+          <!-- LEFT: Calculator -->
+          <div class="wage-calculator" id="wage-calculator">
+            <div class="wage-row">
+              <label class="wage-label" data-i18n="selectCountry"></label>
+              <select class="wage-select" id="wage-country"></select>
+            </div>
+            <div class="quick-btns" id="quick-btns">
+              <button class="quick-btn active" data-code="KR">🇰🇷</button>
+              <button class="quick-btn" data-code="US">🇺🇸</button>
+              <button class="quick-btn" data-code="JP">🇯🇵</button>
+              <button class="quick-btn" data-code="GB">🇬🇧</button>
+              <button class="quick-btn" data-code="EU">🇪🇺</button>
+              <button class="quick-btn" data-code="AU">🇦🇺</button>
+            </div>
+            <div class="wage-row">
+              <label class="wage-label" data-i18n="hourlyWage"></label>
+              <div class="wage-input-wrap">
+                <span class="wage-symbol" id="wage-symbol">₩</span>
+                <input type="number" id="wage-input" class="wage-input" value="9860" min="1" step="100" />
+                <span class="wage-suffix" data-i18n="perHour"></span>
+              </div>
+            </div>
+            <div class="wage-usd-equiv" id="wage-usd-equiv"></div>
+          </div>
+          <!-- RIGHT: KPI widgets -->
+          <div class="kpi-grid" id="kpi-grid"></div>
         </div>
       </div>
     </section>
